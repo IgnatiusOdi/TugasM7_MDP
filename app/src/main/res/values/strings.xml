@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Money Manager</string>
+    <string-array name="jenis">
+        <item>Pemasukan</item>
+        <item>Pengeluaran</item>
+    </string-array>
+</resources>
