@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue_200"
+    android:orientation="vertical"
+    tools:context=".SaldoFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_card"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Total Pengeluaran"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/tvPengeluaran_saldo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Rp 3.456.000,00"
+            android:textColor="@color/red"
+            android:textSize="16sp" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="10dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Total Saldo" />
+
+        <TextView
+            android:id="@+id/tvSaldo_saldo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Rp 3.456.000,00"
+            android:textColor="@color/teal_700"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="15dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/rounded_card"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_saldo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+        </androidx.recyclerview.widget.RecyclerView>
+
+        <Button
+            android:id="@+id/btManajemenSaldo_saldo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Manajemen Saldo" />
+    </LinearLayout>
+</LinearLayout>

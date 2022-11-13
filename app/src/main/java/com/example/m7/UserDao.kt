@@ -5,7 +5,7 @@ import androidx.room.*
 @Dao
 interface UserDao {
     @Insert
-    suspend fun insert(user: UserEntity)
+    suspend fun insert(user:UserEntity)
 
     @Update
     suspend fun update(user:UserEntity)
@@ -13,13 +13,12 @@ interface UserDao {
     @Delete
     suspend fun delete(user:UserEntity)
 
-    @Query("DELETE FROM users where username = :username")
-    suspend fun deleteQuery(username: String)
+    @Query("DELETE FROM user where username = :username")
+    suspend fun deleteQuery(username:String)
 
-    @Query("SELECT * FROM users")
+    @Query("SELECT * FROM user")
     suspend fun fetch():List<UserEntity>
 
-    @Query("SELECT * FROM users where username = :username")
+    @Query("SELECT * FROM user where username = :username")
     suspend fun get(username:String):UserEntity?
-
 }

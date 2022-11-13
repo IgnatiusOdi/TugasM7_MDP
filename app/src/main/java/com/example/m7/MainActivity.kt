@@ -1,31 +1,76 @@
 package com.example.m7
 
+import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
+import androidx.fragment.app.Fragment
+import com.example.m7.UserEntity.Companion.userLoggedIn
 import com.example.m7.databinding.ActivityMainBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var db: AppDatabase
-    private val coroutine = CoroutineScope(Dispatchers.IO)
-    private lateinit var users: MutableList<UserEntity>
 
+    var indexUser: Int = 0
+
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
+        setContentView(binding.root)
 
-        db = AppDatabase.build(this)
-        users = mutableListOf()
+        indexUser = userLoggedIn!!.id!!
 
-        coroutine.launch {
-            refresh()
+        binding.tvUser.text = "Selamat Datang ${userLoggedIn!!.name}!"
+
+        toSaldo()
+
+        binding.navbarMain.setOnItemSelectedListener {
+            when(it.itemId) {
+                R.id.saldo -> {
+                    toSaldo()
+                }
+                R.id.tambah -> {
+                    toTambah()
+                }
+                else -> {
+                    toHistory()
+                }
+            }
+            true
         }
+    }
 
+    private fun toSaldo() {
+        changeFrame(SaldoFragment(indexUser))
+    }
 
+    private fun toTambah() {
+        changeFrame(TambahEditFragment(indexUser, "tambah"))
+    }
+
+    private fun toHistory() {
+        changeFrame(HistoryFragment(indexUser))
+    }
+
+    private fun changeFrame(fragment: Fragment) {
+        val fragmentManager = supportFragmentManager.beginTransaction()
+        fragmentManager.replace(R.id.frame_main, fragment)
+        fragmentManager.commit()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.option, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.logout -> {
+                finish()
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 }
