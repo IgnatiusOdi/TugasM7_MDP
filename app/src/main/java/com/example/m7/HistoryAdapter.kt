@@ -40,9 +40,16 @@ class HistoryAdapter(
         return data.size
     }
 
-    class CustomViewHolder(view: View):RecyclerView.ViewHolder(view) {
+    inner class CustomViewHolder(view: View):RecyclerView.ViewHolder(view) {
         val tvKeterangan: TextView = itemView.findViewById(R.id.tvKeterangan_history)
         val tvNominal: TextView = itemView.findViewById(R.id.tvNominal_history)
         val tvSumber: TextView = itemView.findViewById(R.id.tvSumber_history)
+        init {
+            view.setOnClickListener {
+                onClickListener?.invoke(it, adapterPosition, data[adapterPosition])
+            }
+        }
     }
+
+    var onClickListener:((view: View, position: Int, history: HistoryEntity)->Unit)? = null
 }

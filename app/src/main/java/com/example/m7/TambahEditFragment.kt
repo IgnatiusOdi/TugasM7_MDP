@@ -14,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.*
 
 class TambahEditFragment(
     val indexUser: Int,
@@ -29,7 +30,8 @@ class TambahEditFragment(
     lateinit var btAction: Button
 
     private val coroutine = CoroutineScope(Dispatchers.IO)
-    var status = 1
+    var status = -1
+    lateinit var history: HistoryEntity
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,16 +51,31 @@ class TambahEditFragment(
         etTanggal = view.findViewById(R.id.etTanggal_tambahedit)
         btAction = view.findViewById(R.id.btAction_tambahedit)
 
-        spinnerJenis.adapter = ArrayAdapter(view.context, android.R.layout.simple_spinner_dropdown_item, BankEntity.listBank)
+        spinnerJenis.adapter = ArrayAdapter(view.context, android.R.layout.simple_spinner_dropdown_item, listBank)
 
         if (action == "tambah") {
             btAction.text = "TAMBAH"
         } else {
-            val history = listHistory[indexHistory!!]
+            for (hist in listHistory) {
+                if (hist.id == indexHistory) {
+                    history = hist
+                }
+            }
+            for (i in 0 until listBank.size) {
+                if (listBank[i].id == history.bank_id) {
+                    spinnerJenis.setSelection(i)
+                    spinnerJenis.isEnabled = false
+                }
+            }
             etKeterangan.setText(history.keterangan)
             etJumlah.setText(history.nominal.toString())
             etTanggal.setText(history.tanggal)
             btAction.text = "SIMPAN"
+            if (history.status == 1) {
+                switchMode(btPemasukan)
+            }
+            btPengeluaran.isEnabled = false
+            btPemasukan.isEnabled = false
         }
 
         btPengeluaran.setOnClickListener {
@@ -78,11 +95,14 @@ class TambahEditFragment(
                 Toast.makeText(view.context, "Field kosong!", Toast.LENGTH_SHORT).show()
             } else {
                 val bank = listBank[spinnerJenis.selectedItemPosition]
-                val tanggal = SimpleDateFormat("yyyy/MM/dd").parse(etTanggal.text.toString())
+                val tanggalDate = SimpleDateFormat("yyyy/MM/dd").parse(etTanggal.text.toString())
+                val tanggal = SimpleDateFormat("yyyy/MM/dd").format(tanggalDate as Date)
                 var trans = true
 
                 if (status == -1) {
                     if (action == "tambah" && bank.saldo - jumlah.toInt() < 0) {
+                        trans = false
+                    } else if (action == "edit" && bank.saldo - (jumlah.toInt() - history.nominal) < 0) {
                         trans = false
                     }
                 }
@@ -92,13 +112,20 @@ class TambahEditFragment(
                         val sisaSaldo = bank.saldo + (jumlah.toInt() * status)
                         coroutine.launch {
                             db.bankDao.update(BankEntity(bank.id, bank.user_id, bank.name, sisaSaldo))
-                            db.historyDao.insert(HistoryEntity(null, bank.id!!, bank.name, keterangan, jumlah.toInt(), tanggal!!.toString(), status))
+                            db.historyDao.insert(HistoryEntity(null, bank.id!!, bank.name, keterangan, jumlah.toInt(), tanggal.toString(), status))
+                        }
+                        activity?.runOnUiThread {
                             Toast.makeText(view.context, "Berhasil menambahkan transaksi!", Toast.LENGTH_SHORT).show()
-                            clearFields()
+                            clearInput()
                         }
                     } else {
+                        val selisih = jumlah.toInt() - history.nominal
+                        val sisaSaldo = bank.saldo + (selisih * status)
                         coroutine.launch {
-                            db.historyDao.update(HistoryEntity(indexHistory, bank.id!!, bank.name, keterangan, jumlah.toInt(), tanggal!!.toString(), status))
+                            db.bankDao.update(BankEntity(bank.id, bank.user_id, bank.name, sisaSaldo))
+                            db.historyDao.update(HistoryEntity(indexHistory, bank.id!!, bank.name, keterangan, jumlah.toInt(), tanggal.toString(), status))
+                        }
+                        activity?.runOnUiThread {
                             Toast.makeText(view.context, "Berhasil update history!", Toast.LENGTH_SHORT).show()
                             parentFragmentManager
                                 .beginTransaction()
@@ -129,7 +156,7 @@ class TambahEditFragment(
         }
     }
 
-    private fun clearFields() {
+    private fun clearInput() {
         etKeterangan.setText("")
         etJumlah.setText("")
         etTanggal.setText("")

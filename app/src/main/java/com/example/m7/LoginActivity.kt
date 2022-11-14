@@ -34,7 +34,6 @@ class LoginActivity : AppCompatActivity() {
             if (loginCheck()) {
                 startActivity(Intent(this, MainActivity::class.java))
             }
-            loginCheck()
         }
 
         binding.btToRegisterLogin.setOnClickListener {

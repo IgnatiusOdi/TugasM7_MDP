@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.*
 import com.example.m7.AppDatabase.Companion.db
 import com.example.m7.BankEntity.Companion.listBank
+import com.example.m7.HistoryEntity.Companion.listHistory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,6 +46,13 @@ class ManajemenSaldoFragment(
 
         spinnerJenis.adapter = ArrayAdapter(view.context, android.R.layout.simple_spinner_dropdown_item, listBank)
 
+        spinnerJenis.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                etNominal.setText(listBank[p2].saldo.toString())
+            }
+            override fun onNothingSelected(p0: AdapterView<*>?) {}
+        }
+
         btTambah.setOnClickListener {
             val nama = etNama.text.toString()
             val saldo = etSaldo.text.toString()
@@ -53,9 +61,13 @@ class ManajemenSaldoFragment(
             } else {
                 coroutine.launch {
                     db.bankDao.insert(BankEntity(null, indexUser, nama, saldo.toInt()))
+                }
+                activity?.runOnUiThread {
                     Toast.makeText(view.context, "Berhasil menambahkan rekening!", Toast.LENGTH_SHORT).show()
-                    etNama.setText("")
-                    etSaldo.setText("")
+                    parentFragmentManager
+                        .beginTransaction()
+                        .replace(R.id.frame_main, SaldoFragment(indexUser))
+                        .commit()
                 }
             }
         }
@@ -85,30 +97,15 @@ class ManajemenSaldoFragment(
                 coroutine.launch {
                     db.bankDao.update(BankEntity(bank.id, bank.user_id, bank.name, nominal.toInt()))
                     db.historyDao.insert(HistoryEntity(null, bank.id!!, bank.name, keterangan, selisih, tanggal, status))
-                    refreshListBank()
-                    refreshListHistory()
                 }
-                Toast.makeText(view.context, "Berhasil mengubah saldo", Toast.LENGTH_SHORT).show()
+                activity?.runOnUiThread {
+                    Toast.makeText(view.context, "Berhasil mengubah saldo", Toast.LENGTH_SHORT).show()
+                    parentFragmentManager
+                        .beginTransaction()
+                        .replace(R.id.frame_main, SaldoFragment(indexUser))
+                        .commit()
+                }
             }
-        }
-
-        spinnerJenis.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                etNominal.setText(listBank[p2].saldo.toString())
-            }
-            override fun onNothingSelected(p0: AdapterView<*>?) {}
-        }
-    }
-
-    private suspend fun refreshListBank() {
-        listBank.clear()
-        listBank.addAll(db.bankDao.get(indexUser).toMutableList())
-    }
-
-    private suspend fun refreshListHistory() {
-        HistoryEntity.listHistory.clear()
-        for (bank in listBank) {
-            HistoryEntity.listHistory.addAll(db.historyDao.get(bank.id!!).toMutableList())
         }
     }
 }
